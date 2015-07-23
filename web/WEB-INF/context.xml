@@ -1,0 +1,8 @@
+<Context  reloadable="true" >
+
+    <Resource name="jdbc/rssfeed" auth="Container" type="javax.sql.DataSource"
+              maxActive="100" maxIdle="30" maxWait="10000"
+              username="root" password="admin"
+              driverClassName="com.mysql.jdbc.Driver"
+              url="jdbc:mysql://127.0.0.1:3306/javatest?autoReconnect=true"/>
+</Context>
