@@ -14,9 +14,9 @@ public class TrackerServlet extends HttpServlet {
     public void init() throws ServletException
     {
         try{ // Do required initialization
-            String connectionURL = "jdbc:mysql://127.0.0.1/rssutility";
+            String connectionURL = "jdbc:mysql://mysql3000.mochahost.com/alpin3_rssutility";
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            this.connection = DriverManager.getConnection(connectionURL, "root", "admin");
+            this.connection = DriverManager.getConnection(connectionURL, "alpin3_1", "passw0rd");
 
         }catch(Exception ex){
             // unable to hit the database
@@ -34,6 +34,32 @@ public class TrackerServlet extends HttpServlet {
             destroy();
         }
 
+        try {
+            if(request.getParameter("export") != null){
+
+                export(request,response);
+
+            }else if(request.getParameter("add") != null){
+
+                add(request,response);
+
+            }else if(request.getParameter("select") != null){
+
+
+
+            }
+        }catch (Exception ex){
+
+        }
+
+
+    }
+
+    public void export(HttpServletRequest request, HttpServletResponse response) throws IOException{
+
+    }
+
+    public void add(HttpServletRequest request, HttpServletResponse response) throws IOException{
         // Set response content type
         response.setContentType("text/html");
 
@@ -83,7 +109,7 @@ public class TrackerServlet extends HttpServlet {
                     }
                 }
             }
-        }catch(SQLException ex){
+        }catch(Exception ex){
             response.sendRedirect("error.jsp");
         }
     }

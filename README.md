@@ -16,8 +16,12 @@ Technology
 -----
   - IDE
     - JetBrains IntelliJ IDEA 14 Community Edition
+    - Servlet API
+
   - Server
     - Java 1.7
     - Tomcat 7.0
     - Tomcat Controller for OSX
     - MySQL
+    - MySQL -> Tomcat J Connector
+    - JSTL 1.2
