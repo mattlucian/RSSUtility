@@ -3,19 +3,23 @@ Simple Java Servlet application that tracks RSS feeds and contains exporting cap
 
 Core
 -----
-  - Servlet clas
-    - Core servlet functionality
-    - Controller for views
-  
-  - RSSTracker class
-    - Adds RSS feeds
-    - Deletes RSS feeds
-    - Exports RSS feeds
+  - TrackerServlet class
+    - Processes GetFeeds Request //todo
+    - Processes AddFeed Request
+    - Processes ExportFeed Request //todo
+    - Processes ExportFeeds Request //todo
+  - index.jsp
+    - Displays feeds and the ability to add feeds.
+  - error.jsp
+    - Landing page when an error occurs
+  - alreadyexists.jsp
+    - Landing page when trying to add a feed that already exists
+      - (May remove and add error messages to index.jsp to reduce pages)
 
 Technology
 -----
   - IDE
-    - JetBrains IntelliJ IDEA 14 Community Edition
+    - JetBrains IntelliJ IDEA 14 (Ultimate)
     - Servlet API
 
   - Server
