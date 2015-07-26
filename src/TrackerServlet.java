@@ -1,7 +1,9 @@
 // Import required java libraries
 import java.io.*;
-import java.net.URL;
+
+import feeds.Feed;
 import java.sql.*;
+import java.util.ArrayList;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
@@ -24,10 +26,12 @@ public class TrackerServlet extends HttpServlet {
         }
 }
 
-    public void doGet(HttpServletRequest request,
+    public void doPost(HttpServletRequest request,
                       HttpServletResponse response)
             throws ServletException, IOException
     {
+        ServletStatus status = new ServletStatus();
+
         if(failed){ // check DB error
             failed = false;
             response.sendRedirect("error.jsp");
@@ -37,31 +41,52 @@ public class TrackerServlet extends HttpServlet {
         try {
             if(request.getParameter("export") != null){
 
-                export(request,response);
+                status = export(request,response);
+                if(status.succeeded){
+
+                }else{
+                    // failed
+                }
 
             }else if(request.getParameter("add") != null){
 
-                add(request,response);
+                status = add(request,response);
 
-            }else if(request.getParameter("select") != null){
-
-
+                if(status.succeeded) {
+                    response.sendRedirect("index.jsp");
+                }else{
+                    // send to index but pass error message
+                    request.getSession().setAttribute("errorMessage", status.message);
+                    response.sendRedirect("index.jsp");
+                    //request.setAttribute("errorMessage",status.message);
+                    //RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
+                    //dispatcher.forward(request, response);
+                }
 
             }
         }catch (Exception ex){
 
+            request.getSession().setAttribute("errorMessage","Unable to perform operation, please try again.");
+            response.sendRedirect("index.jsp");
+            //RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
+            //dispatcher.forward(request, response);
         }
 
 
     }
 
-    public void export(HttpServletRequest request, HttpServletResponse response) throws IOException{
+    // export to CSV
+    public ServletStatus export(HttpServletRequest request, HttpServletResponse response) throws IOException{
+        ServletStatus status = new ServletStatus();
 
+        return status;
     }
 
-    public void add(HttpServletRequest request, HttpServletResponse response) throws IOException{
+    // Add new Feed
+    public ServletStatus add(HttpServletRequest request, HttpServletResponse response) throws IOException{
         // Set response content type
         response.setContentType("text/html");
+        ServletStatus status = new ServletStatus();
 
         // Get parameters
         String feedName = "";
@@ -73,45 +98,50 @@ public class TrackerServlet extends HttpServlet {
                 failed = true;
             }
         }catch (Exception ex){
-            response.sendRedirect("error.jsp");
+            status.succeeded = false;
+            status.message = "Please enter correct name and URL";
         }
-
-        //PrintWriter p = response.getWriter();
-        //p.println("name: "+feedName + "  url: "+feedURL);
-//        PrintWriter p = response.getWriter();
 
         // Success
         try{
             if(connection == null) {
-                response.sendRedirect("error.jsp");
-                //p.println("connection isnt here");
+                status.succeeded = false;
+                status.message = "Failed to connect to database";
             }
-            if(!connection.isClosed()) {
-                // add rss entry
-//                p.println("connection is open");
-
+            else if(!connection.isClosed()) {
+                // validate that RSS feed doesn't already exist
                 PreparedStatement validateStmt = connection.prepareStatement("SELECT name, url FROM rssfeed WHERE name = ? OR url = ? ");
                 validateStmt.setString(1, feedName);
                 validateStmt.setString(2, feedURL);
                 ResultSet rs = validateStmt.executeQuery();
+
                 if (rs != null) {
                     if (rs.next()) {
-                        response.sendRedirect("alreadyexists.jsp");
+                        status.succeeded = false;
+                        status.message = "Name or URL already exists, please try again";
                     }else{
-
+                        // insert feed into DB
                         PreparedStatement insertStmt = connection.prepareStatement("INSERT INTO rssfeed (name, url) values ( ? , ? )");
                         insertStmt.setString(1,feedName);
                         insertStmt.setString(2, feedURL);
                         insertStmt.execute();
-
-                        response.sendRedirect("index.jsp");
-
+                        status.succeeded = true;
                     }
+                }else{
+                    status.succeeded = false;
+                    status.message = "Failed to connect to database";
                 }
+            }else{
+                status.succeeded = false;
+                status.message = "Database connection already closed, please try again.";
             }
         }catch(Exception ex){
-            response.sendRedirect("error.jsp");
+            status.succeeded = false;
+            status.message = "Failure while trying to insert new feed, please try again\n";
+            status.message += ex.getMessage();
+
         }
+        return status;
     }
 
     public void destroy()
