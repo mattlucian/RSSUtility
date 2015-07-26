@@ -4,17 +4,24 @@ Simple Java Servlet application that tracks RSS feeds and contains exporting cap
 Core
 -----
   - TrackerServlet class
-    - Processes GetFeeds Request //todo
     - Processes AddFeed Request
     - Processes ExportFeed Request //todo
     - Processes ExportFeeds Request //todo
+
+  - Utility class
+    - GetFeeds method  : returns all current feeds in DB
+    - ExportFeed(Feed) : exports one feed to CSV //todo
+
+  - ServletStatus class
+    - Provides for more detailed responses
+
+  - Feed class
+    - Holder for the Feed information from DB
+
   - index.jsp
     - Displays feeds and the ability to add feeds.
   - error.jsp
-    - Landing page when an error occurs
-  - alreadyexists.jsp
-    - Landing page when trying to add a feed that already exists
-      - (May remove and add error messages to index.jsp to reduce pages)
+    - Landing page when an unexpected error occurs
 
 Technology
 -----
