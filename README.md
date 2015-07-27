@@ -1,19 +1,19 @@
 # RSSTracker
-Simple Java Servlet application that tracks RSS feeds and contains exporting capability
+Simple Java Servlet application that tracks RSS feeds and contains exporting capability (CSV)
 
 Core
 -----
   - TrackerServlet class
-    - Processes AddFeed Request
-    - Processes ExportFeed Request //todo
-    - Processes ExportFeeds Request //todo
+    - Processes Add Request (New Feed)
+    - Processes Export Request (Export Single Feed)
+    - Processes ExportAll Request (Export All Feeds)
 
   - Utility class
     - GetFeeds method  : returns all current feeds in DB
-    - ExportFeed(Feed) : exports one feed to CSV //todo
+    - SerializeFeed : Serializes single feed for CSV
 
   - ServletStatus class
-    - Provides for more detailed responses
+    - Provides for more detailed responses with error messages
 
   - Feed class
     - Holder for the Feed information from DB
