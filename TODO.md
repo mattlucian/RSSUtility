@@ -9,6 +9,7 @@ TODO
 
 Known Issues
 -----
+  - Invalid URLs don't redirect to error page properly
 
 Future
 -----

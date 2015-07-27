@@ -26,22 +26,26 @@ public class TrackerServlet extends HttpServlet {
 
     public void init() throws ServletException
     {
-        try{ // Do required initialization
-            String connectionURL = "jdbc:mysql://mysql3000.mochahost.com/alpin3_rssutility";
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            this.connection = DriverManager.getConnection(connectionURL, "alpin3_1", "passw0rd");
 
-        }catch(Exception ex){
-            // unable to hit the database
-
-        }
-}
+    }
 
     // Handles POST requests, only thing currently supported
     public void doPost(HttpServletRequest request,
                       HttpServletResponse response)
             throws ServletException, IOException
     {
+
+        try{ // Do required initialization
+            // **************
+            String connectionURL = "**************";
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            this.connection = DriverManager.getConnection(connectionURL, "**************", "**************");
+
+        }catch(Exception ex){
+            // unable to hit the database
+
+        }
+
         ServletStatus status = new ServletStatus();
 
         /*if(failed){ // check DB error
