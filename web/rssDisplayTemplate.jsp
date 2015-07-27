@@ -11,11 +11,11 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
 <!-- JSTL display for RSS feeds -->
-<c:if test="${param.feedURL != null}">
+<c:if test="${(param.display != null) && (param.display != '')}">
 
-  <h3>Displaying for: ${param.feedURL}</h3>
+  <h3>Displaying for: ${param.display}</h3>
 
-  <c:import var="xmlContent" url="${param.feedURL}"/>
+  <c:import var="xmlContent" url="${param.display}"/>
   <x:parse var="doc" xml="${xmlContent}"/>
 
   <table class="content-table" id="feed">

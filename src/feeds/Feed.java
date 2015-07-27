@@ -3,10 +3,13 @@
  */
 package feeds;
 
+import java.util.ArrayList;
+
 public class Feed {
     public int id;
     public String feedName;
     public String feedURL;
+    public ArrayList<Item> items = null;
 
     public Feed(int id, String feed, String url){
         this.id = id;
@@ -17,7 +20,9 @@ public class Feed {
     public String getFeedHtml(){
         String html = "";
         html += "<tr><td>"+feedName+"</td><td><button onclick=\"clickedDisplay("+id+")\">Display</button>";
-        html += "<input type=\"hidden\" id=\"url_"+id+"\" value=\""+feedURL+"\" /></td></tr>";
+        html += "<button onclick=\"clickedExport("+id+")\">Export</button>";
+        html += "<input type=\"hidden\" name=\"url_"+id+"\" id=\"url_"+id+"\" value=\""+feedURL+"\" /></td></tr>";
         return html;
     }
+
 }

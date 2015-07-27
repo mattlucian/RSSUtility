@@ -1,16 +1,26 @@
 // Import required java libraries
 import java.io.*;
 
-import feeds.Feed;
+
 import java.sql.*;
-import java.util.ArrayList;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+
+import feeds.Feed;
+import feeds.Utility;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import java.io.File;
+import java.util.ArrayList;
+
 
 // Extend HttpServlet class
 public class TrackerServlet extends HttpServlet {
 
-    private boolean failed = false;
     private Connection connection = null;
 
     public void init() throws ServletException
@@ -22,33 +32,48 @@ public class TrackerServlet extends HttpServlet {
 
         }catch(Exception ex){
             // unable to hit the database
-            failed = true;
+
         }
 }
 
+    // Handles POST requests, only thing currently supported
     public void doPost(HttpServletRequest request,
                       HttpServletResponse response)
             throws ServletException, IOException
     {
         ServletStatus status = new ServletStatus();
 
-        if(failed){ // check DB error
+        /*if(failed){ // check DB error
             failed = false;
             response.sendRedirect("error.jsp");
             destroy();
         }
-
+*/
+        String action = null;
         try {
-            if(request.getParameter("export") != null){
+            if((action = request.getParameter("plan")) != null){
 
-                status = export(request,response);
-                if(status.succeeded){
+                if(action.equals("export")){
+                    status = export(request,response);
+                    if(!status.succeeded){
+                        // error exporting single, please try again.
+                    }
 
-                }else{
-                    // failed
+
+                }else if(action.equals("display")){
+
+                    response.sendRedirect("index.jsp?display="+request.getParameter("display"));
+
+                }else if(action.equals("exportAll")){
+                    status = exportAll(request,response);
+                    if(!status.succeeded){
+                        // error exporting all, please try again
+                    }
                 }
 
-            }else if(request.getParameter("add") != null){
+            }
+
+            if(request.getParameter("add") != null){
 
                 status = add(request,response);
 
@@ -58,28 +83,17 @@ public class TrackerServlet extends HttpServlet {
                     // send to index but pass error message
                     request.getSession().setAttribute("errorMessage", status.message);
                     response.sendRedirect("index.jsp");
-                    //request.setAttribute("errorMessage",status.message);
-                    //RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
-                    //dispatcher.forward(request, response);
                 }
 
             }
+
         }catch (Exception ex){
 
             request.getSession().setAttribute("errorMessage","Unable to perform operation, please try again.");
             response.sendRedirect("index.jsp");
-            //RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
-            //dispatcher.forward(request, response);
         }
 
 
-    }
-
-    // export to CSV
-    public ServletStatus export(HttpServletRequest request, HttpServletResponse response) throws IOException{
-        ServletStatus status = new ServletStatus();
-
-        return status;
     }
 
     // Add new Feed
@@ -95,11 +109,14 @@ public class TrackerServlet extends HttpServlet {
             feedName = request.getParameter("name");
             feedURL = request.getParameter("url");
             if(feedName.isEmpty() || feedURL.isEmpty()){ // validate
-                failed = true;
+                status.succeeded = false;
+                status.message = "Name and/or URL are empty, please try again.";
+                return status;
             }
         }catch (Exception ex){
             status.succeeded = false;
             status.message = "Please enter correct name and URL";
+            return status;
         }
 
         // Success
@@ -107,6 +124,7 @@ public class TrackerServlet extends HttpServlet {
             if(connection == null) {
                 status.succeeded = false;
                 status.message = "Failed to connect to database";
+                return status;
             }
             else if(!connection.isClosed()) {
                 // validate that RSS feed doesn't already exist
@@ -119,6 +137,7 @@ public class TrackerServlet extends HttpServlet {
                     if (rs.next()) {
                         status.succeeded = false;
                         status.message = "Name or URL already exists, please try again";
+                        return status;
                     }else{
                         // insert feed into DB
                         PreparedStatement insertStmt = connection.prepareStatement("INSERT INTO rssfeed (name, url) values ( ? , ? )");
@@ -130,18 +149,133 @@ public class TrackerServlet extends HttpServlet {
                 }else{
                     status.succeeded = false;
                     status.message = "Failed to connect to database";
+                    return status;
                 }
             }else{
                 status.succeeded = false;
                 status.message = "Database connection already closed, please try again.";
+                return status;
             }
         }catch(Exception ex){
             status.succeeded = false;
             status.message = "Failure while trying to insert new feed, please try again\n";
-            status.message += ex.getMessage();
+            return status;
 
         }
         return status;
+    }
+
+    // export single feed
+    public ServletStatus export(HttpServletRequest request, HttpServletResponse response) throws IOException{
+        ServletStatus status = new ServletStatus();
+
+        // Get parameters
+        String feedURL = "";
+        try{
+            feedURL = request.getParameter("url_"+request.getParameter("currentSelection"));
+            if(feedURL.isEmpty()){ // validate
+                status.succeeded = false;
+                status.message = "URL parameter is blank, please try again.";
+                return status;
+            }
+
+            Utility utility = new Utility();
+            String CSVExport = "";
+            // Parse XML components
+            try {
+                // XML reader
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                Document doc = dBuilder.parse(feedURL);
+
+                // Get list of all the items from Feed
+                NodeList nList = doc.getElementsByTagName("item");
+
+                // CSV Header
+                CSVExport += "Title,Published Date,Category,Description\n";
+
+                // Serialize NodeList to CSV
+                CSVExport = utility.serializeFeed(CSVExport,nList);
+
+                // Set up for File download as CSV
+                response.setContentType("application/csv");
+                response.setHeader("Content-Type", "text/csv");
+                response.setHeader("Content-Disposition", "attachment;filename=\"FeedExport.csv\"");
+
+                // Print CSV contents out
+                PrintWriter p = response.getWriter();
+                p.println(CSVExport);
+                p.flush();
+                p.close();
+
+                status.succeeded = true;
+                return status;
+
+            } catch (Exception e) {
+                status.message = "bombed out while exporting "+e.getMessage();
+                status.succeeded = false;
+            }
+
+
+
+
+
+
+        }catch (Exception ex){
+            status.succeeded = false;
+            status.message = "Failed to get Name and/or URL parameters, please try again.";
+        }
+
+        return status;
+    }
+
+    // export all feeds
+    public ServletStatus exportAll(HttpServletRequest request, HttpServletResponse response) throws IOException
+    {
+        ServletStatus status = new ServletStatus();
+
+        Utility utility = new Utility();
+        ArrayList<Feed> feeds = utility.getFeeds();
+
+
+        // CSV Header
+        String CSVExport =  "Source,Title,Published Date,Category,Description\n";
+
+        for(Feed feed : feeds){
+            try {
+                // XML reader
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                Document doc = dBuilder.parse(feed.feedURL);
+
+                // Get list of all the items from Feed
+                NodeList nList = doc.getElementsByTagName("item");
+
+                // Serialize NodeList to CSV
+                CSVExport = utility.serializeFeed(CSVExport, nList, feed.feedName);
+
+            } catch (Exception e) {
+                status.message = "inner fail "+e.getMessage();
+                status.succeeded = false;
+            }
+
+        }
+
+        // Set up for File download as CSV
+        response.setContentType("application/csv");
+        response.setHeader("Content-Type", "text/csv");
+        response.setHeader("Content-Disposition", "attachment;filename=\"ExportAll.csv\"");
+
+        // Print CSV contents out
+        PrintWriter p = response.getWriter();
+        p.println(CSVExport);
+        p.flush();
+        p.close();
+
+        status.succeeded = true;
+        return status;
+
+
     }
 
     public void destroy()
@@ -150,7 +284,7 @@ public class TrackerServlet extends HttpServlet {
         try{
             connection.close();
         }catch (SQLException ex){
-            failed = true;
+
         }
 
     }
