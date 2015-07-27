@@ -20,8 +20,9 @@
   <body>
     <p style="color:red">${sessionScope.errorMessage}</p>
     <% request.getSession().setAttribute("errorMessage","");%>
-    <h1>Welcome to RSSUtility</h1>
+    <h1>RSSUtility</h1>
     <a href="http://github.com/mattlucian/RSSUtility" target="_blank"><h4>Source Code</h4></a>
+    <a href="https://github.com/mattlucian/RSSUtility/blob/master/TODO.md" target="_blank"><h4>TODO List</h4></a>
 
     <!-- ADD RSS FEED FORM -->
     <h5>Add a new RSS Feed</h5>
@@ -63,7 +64,6 @@
     <!-- EXPORT RSS -->
     <form action="/TrackerServlet" id="exportForm" method="post" >
         <input type="hidden" id="export" name="export" value="" />
-        <button id="weirdBugFix" onclick="clickedExport(1)" >Test</button>
     </form>
 
 

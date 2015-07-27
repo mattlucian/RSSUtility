@@ -1,4 +1,4 @@
-# RSSTracker
+# RSSUtility
 Simple Java Servlet application that tracks RSS feeds and contains exporting capability (CSV)
 
 Core
