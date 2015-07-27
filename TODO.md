@@ -9,3 +9,7 @@ TODO
 
 Known Issues
 -----
+
+Future
+-----
+  - Delete feature to RSS Feeds
