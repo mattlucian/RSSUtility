@@ -2,6 +2,7 @@
 import java.io.*;
 
 
+import java.net.URL;
 import java.sql.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -57,6 +58,8 @@ public class TrackerServlet extends HttpServlet {
                     status = export(request,response);
                     if(!status.succeeded){
                         // error exporting single, please try again.
+                        request.getSession().setAttribute("errorMessage", status.message);
+                        response.sendRedirect("index.jsp");
                     }
 
 
@@ -136,7 +139,7 @@ public class TrackerServlet extends HttpServlet {
                 if (rs != null) {
                     if (rs.next()) {
                         status.succeeded = false;
-                        status.message = "Name or URL already exists, please try again";
+                        status.message = "Name or URL already exists, please try again\n";
                         return status;
                     }else{
                         // insert feed into DB
@@ -148,17 +151,17 @@ public class TrackerServlet extends HttpServlet {
                     }
                 }else{
                     status.succeeded = false;
-                    status.message = "Failed to connect to database";
+                    status.message += "Failed to connect to database\n";
                     return status;
                 }
             }else{
                 status.succeeded = false;
-                status.message = "Database connection already closed, please try again.";
+                status.message += "Database connection already closed, please try again.\n";
                 return status;
             }
         }catch(Exception ex){
             status.succeeded = false;
-            status.message = "Failure while trying to insert new feed, please try again\n";
+            status.message += "Failure while trying to insert new feed, please try again\n";
             return status;
 
         }
@@ -183,10 +186,14 @@ public class TrackerServlet extends HttpServlet {
             String CSVExport = "";
             // Parse XML components
             try {
+                InputStream inputXML = new URL(feedURL).openConnection().getInputStream();
+
                 // XML reader
                 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+
                 DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                Document doc = dBuilder.parse(feedURL);
+
+                Document doc = dBuilder.parse(inputXML);
 
                 // Get list of all the items from Feed
                 NodeList nList = doc.getElementsByTagName("item");
@@ -212,7 +219,7 @@ public class TrackerServlet extends HttpServlet {
                 return status;
 
             } catch (Exception e) {
-                status.message = "bombed out while exporting "+e.getMessage();
+                status.message += "Currently unable to export this type of RSS feed.";
                 status.succeeded = false;
             }
 

@@ -18,44 +18,67 @@
     <script type="text/javascript" src="js/site.js"></script>   <!-- JS -->
   </head>
   <body>
-    <p style="color:red">${sessionScope.errorMessage}</p>
+    <p style="color:red;margin-top:3%;">${sessionScope.errorMessage}</p>
     <% request.getSession().setAttribute("errorMessage","");%>
-    <h1>RSSUtility</h1>
-    <a href="http://github.com/mattlucian/RSSUtility" target="_blank"><h4>Source Code</h4></a>
-    <a href="https://github.com/mattlucian/RSSUtility/blob/master/TODO.md" target="_blank"><h4>TODO List</h4></a>
+    <h1 class="heading">RSSUtility</h1>
+    <button onclick="visitPage('http://github.com/mattlucian/RSSUtility')" class="button-style">Source Code</button>
+    <button onclick="visitPage('https://github.com/mattlucian/RSSUtility/blob/master/TODO.md')" class="button-style">TODO List</button>
+    <hr class="half-hr" />
+
 
     <!-- ADD RSS FEED FORM -->
-    <h5>Add a new RSS Feed</h5>
-    <form action="/TrackerServlet" method="post" name="add">
-      Label: <input name="name" type="text" placeholder="Yahoo Tech News"> <BR>
-      RSS Url: <input name="url" type="text" placeholder="http://news.yahoo.com/rss/tech"> <BR>
-      <input type="hidden" name="add" />
-      <input type="submit" value="Add RSS" >
-    </form>
+    <div style="width:100%;float:left">
+        <div style="width:500px;margin:auto">
+            <h3 class="heading">Add a new RSS Feed</h3>
+            <form action="/TrackerServlet" method="post" name="add">
+                <div class="input-container">
+                    <label class="default-label" for="newFeedName">Name</label>
+                    <input id="newFeedName" name="name" type="text" placeholder="NY Times">
+                </div>
+
+                <div class="input-container">
+                    <label class="default-label" for="newFeedUrl">URL</label>
+                    <input id="newFeedUrl" name="url" type="text" placeholder="http://rss.nytimes.com/services/xml/rss/nyt/Americas.xml">
+                </div>
+
+                <input type="hidden" name="add" />
+                <div class="input-container">
+                    <input style="float:right" class="button-style" type="submit" value="Add RSS" >
+                </div>
+            </form>
+        </div>
+    </div>
+    <hr class="half-hr" />
+
 
     <!-- CURRENT RSS FEEDS -->
-    <h2>RSS Feeds</h2>
-    <form id="rssForm" action="/TrackerServlet" method="post">
-        <button onclick="exportAll()">Export All</button>
-        <input type="hidden" id="display" name="display" value="" />
-        <input type="hidden" id="servlet_plan" name="plan" value="" />
-        <input type="hidden" id="currentSelection" name="currentSelection" value=""/>
-        <table>
-            <tr>
-                <th>RSS Feed</th>
-                <th>Action</th>
-            </tr> <%
-             Utility utility = new Utility();
-             try{
-                 ArrayList<Feed> feeds = utility.getFeeds();
-                 for(Feed feed : feeds) {
-                   out.println(feed.getFeedHtml());
-                 }
-             }catch(Exception ex){
+    <div style="width:100%;float:left">
+        <div style="width:500px;margin:auto;">
+            <h2 class="rss-heading">RSS Feeds</h2>
+            <form id="rssForm" action="/TrackerServlet" method="post">
+                <input type="hidden" id="display" name="display" value="" />
+                <input type="hidden" id="servlet_plan" name="plan" value="" />
+                <input type="hidden" id="currentSelection" name="currentSelection" value=""/>
+                <table id="feedTable">
+                    <%
+                        Utility utility = new Utility();
+                        try{
+                            ArrayList<Feed> feeds = utility.getFeeds();
+                            for(Feed feed : feeds) {
+                                out.println(feed.getFeedHtml());
+                            }
+                        }catch(Exception ex){
 
-             } %>
-        </table>
-    </form>
+                        } %>
+                </table>
+                <hr class="full-hr" />
+                <div style="text-align:right;width:500px;margin:auto;">
+                    <button class="button-style" onclick="exportAll()">Export All</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
 
     <!-- RSS DISPLAY TEMPLATE -->

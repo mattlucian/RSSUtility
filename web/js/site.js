@@ -19,3 +19,8 @@ function exportAll(){
     document.getElementById("servlet_plan").value = "exportAll";
     document.getElementById("rssForm").submit();
 }
+
+function visitPage(url){
+    var win = window.open(url, '_blank');
+    win.focus();
+}

@@ -13,6 +13,11 @@ import java.util.ArrayList;
  * Created by matt on 7/26/15.
  */
 public class Utility {
+    private String connectionURL = "***************";
+    private String connectionUserName = "***************";
+    private String connectionPassword = "***************";
+    /// ***************
+
     public Utility(){
 
     }
@@ -20,11 +25,10 @@ public class Utility {
     public ArrayList<Feed> getFeeds(){
         ArrayList<Feed> feeds = new ArrayList<Feed>();
         try {
-            String connectionURL = "jdbc:mysql://mysql3000.mochahost.com/alpin3_rssutility";
             //String connectionURL = "jdbc:mysql://localhost/rssutility";
             Connection connection = null;
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            connection = DriverManager.getConnection(connectionURL, "alpin3_1", "passw0rd");
+            connection = DriverManager.getConnection(connectionURL, connectionUserName, connectionPassword);
             //connection = DriverManager.getConnection(connectionURL, "root", "admin");
 
             if(!connection.isClosed()){
@@ -42,15 +46,14 @@ public class Utility {
 
     }
 
-   /* public ArrayList<Item> getFeedItems(int id){
+    public ArrayList<Item> getFeedItems(int id){
         ArrayList<Item> items = new ArrayList<Item>();
         String url = "";
         try {
-            String connectionURL = "jdbc:mysql://mysql3000.mochahost.com/alpin3_rssutility";
             //String connectionURL = "jdbc:mysql://localhost/rssutility";
             Connection connection = null;
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            connection = DriverManager.getConnection(connectionURL, "alpin3_1", "passw0rd");
+            connection = DriverManager.getConnection(connectionURL, connectionUserName, connectionPassword);
             //connection = DriverManager.getConnection(connectionURL, "root", "admin");
 
             if(!connection.isClosed()){
@@ -69,7 +72,9 @@ public class Utility {
         }catch(Exception ex){
             return new ArrayList<Item>();
         }
-    }*/
+
+        return items;
+    }
 
     public String serializeFeed(String currentCSV, NodeList nList, String source) {
         for (int temp = 0; temp < nList.getLength(); temp++) { // FOR EACH ITEM in RSS Feed
@@ -92,12 +97,33 @@ public class Utility {
     }
 
     public String serializeItem(Element eNode){
-        String newLine = "";
-        newLine += eNode.getElementsByTagName("title").item(0).getTextContent().replace(',',';').replace('\n',' ')+ ",";
-        newLine += eNode.getElementsByTagName("pubDate").item(0).getTextContent().replace(',', ';').replace('\n',' ') + ",";
-        newLine += eNode.getElementsByTagName("category").item(0).getTextContent().replace(',', ';').replace('\n',' ') + ",";
-        newLine += eNode.getElementsByTagName("description").item(0).getTextContent().replace(',',';').replace('\n',' ');
-        newLine += "\n";
+        String title = "", pubDate = "", category = "", description = "";
+        // title
+        try{
+            title = eNode.getElementsByTagName("title").item(0).getTextContent().replace(',',';').replace('\n',' ')+ ",";
+        }catch (Exception ex){
+            title = "Not Found ,";
+        }
+        // publication date
+        try{
+            pubDate = eNode.getElementsByTagName("pubDate").item(0).getTextContent().replace(',', ';').replace('\n',' ') + ",";
+        }catch (Exception ex){
+            pubDate = "Not Found ,";
+        }
+        // category
+        try{
+            category = eNode.getElementsByTagName("category").item(0).getTextContent().replace(',', ';').replace('\n',' ') + ",";
+        }catch (Exception ex){
+            category = "Not Found ,";
+        }
+        // description
+        try {
+             description = eNode.getElementsByTagName("description").item(0).getTextContent().replace(',',';').replace('\n',' ');
+        }catch (Exception e){
+            description = "Not Found";
+        }
+
+        String newLine = title + pubDate + category + description + "\n";
         return  newLine;
     }
 

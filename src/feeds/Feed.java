@@ -19,8 +19,8 @@ public class Feed {
 
     public String getFeedHtml(){
         String html = "";
-        html += "<tr><td>"+feedName+"</td><td><button onclick=\"clickedDisplay("+id+")\">Display</button>";
-        html += "<button onclick=\"clickedExport("+id+")\">Export</button>";
+        html += "<tr><td>"+feedName+"</td><td style=\"text-align:right;\"><button class=\"button-style\" onclick=\"clickedDisplay("+id+")\">Display</button>";
+        html += "<button class=\"button-style\" onclick=\"clickedExport("+id+")\">Export</button>";
         html += "<input type=\"hidden\" name=\"url_"+id+"\" id=\"url_"+id+"\" value=\""+feedURL+"\" /></td></tr>";
         return html;
     }

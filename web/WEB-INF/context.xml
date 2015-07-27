@@ -8,7 +8,7 @@
 
     <Resource name="jdbc/rssfeed" auth="Container" type="javax.sql.DataSource"
               maxActive="100" maxIdle="30" maxWait="10000"
-              username="alpin3_1" password="passw0rd"
+              username="***************" password="***************"
               driverClassName="com.mysql.jdbc.Driver"
-              url="jdbc:mysql://mysql3000.mochahost.com:3306/javatest?autoReconnect=true"/>
+              url="***************"/>
 </Context>
