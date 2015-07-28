@@ -23,6 +23,10 @@ table
 #feed td
 {font-family: Tahoma; font-size: 11px}
 
+.trash-button{
+    height: 16px;
+    vertical-align: middle;
+}
 
 .full-hr{
     width:80%;

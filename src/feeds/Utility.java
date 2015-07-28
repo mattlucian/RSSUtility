@@ -1,8 +1,14 @@
 package feeds;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.InputStream;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,9 +19,10 @@ import java.util.ArrayList;
  * Created by matt on 7/26/15.
  */
 public class Utility {
-    private String connectionURL = "***************";
-    private String connectionUserName = "***************";
-    private String connectionPassword = "***************";
+    // *****************
+    private String connectionURL = "**********************************";
+    private String connectionUserName = "*****************";
+    private String connectionPassword = "*****************";
     /// ***************
 
     public Utility(){
@@ -46,86 +53,117 @@ public class Utility {
 
     }
 
-    public ArrayList<Item> getFeedItems(int id){
+    public ArrayList<Item> getFeedItems(String url){
         ArrayList<Item> items = new ArrayList<Item>();
-        String url = "";
         try {
-            //String connectionURL = "jdbc:mysql://localhost/rssutility";
-            Connection connection = null;
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            connection = DriverManager.getConnection(connectionURL, connectionUserName, connectionPassword);
-            //connection = DriverManager.getConnection(connectionURL, "root", "admin");
+            InputStream inputXML = new URL(url).openConnection().getInputStream();
 
-            if(!connection.isClosed()){
-                PreparedStatement stmt = connection.prepareStatement("SELECT * FROM rssfeed WHERE id = ?");
-                stmt.setString(1,""+id);
-                ResultSet rs = stmt.executeQuery();
-                if(rs.next()){
-                    url = rs.getString("url");
-                }
+            // XML reader
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
+            Document doc = dBuilder.parse(inputXML);
 
+            // Get list of all the items from Feed
+            NodeList nList = doc.getElementsByTagName("item");
+
+            for(int i = 0; i < nList.getLength(); i++){
+                Element eNode = (Element)nList.item(i);
+                items.add(new Item(
+
+                ));
             }
-            connection.close();
 
-        }catch(Exception ex){
-            return new ArrayList<Item>();
+        }catch (Exception ex){
+            return null;
         }
-
         return items;
     }
 
-    public String serializeFeed(String currentCSV, NodeList nList, String source) {
-        for (int temp = 0; temp < nList.getLength(); temp++) { // FOR EACH ITEM in RSS Feed
-
-            Element eNode = (Element)nList.item(temp);
+    public String serializeFeed(String currentCSV, ArrayList<Item> items, String source) {
+        for (Item item : items) { // FOR EACH ITEM in RSS Feed
             currentCSV += source.replace(',',';').replace('\n',' ')+ ","; // Adds Source column
-            currentCSV += serializeItem(eNode);
+            currentCSV += serializeItem(item);
         }
         return  currentCSV;
 
     }
 
-    public String serializeFeed(String currentCSV, NodeList nList){
-        for (int temp = 0; temp < nList.getLength(); temp++) { // FOR EACH ITEM in RSS Feed
-
-            Element eNode = (Element)nList.item(temp);
-            currentCSV += serializeItem(eNode);
+    public String serializeFeed(String currentCSV, ArrayList<Item> items){
+        for (Item item : items) { // FOR EACH ITEM in RSS Feed
+            currentCSV += serializeItem(item);
         }
         return  currentCSV;
     }
 
-    public String serializeItem(Element eNode){
+    public String serializeItem(Item item){
         String title = "", pubDate = "", category = "", description = "";
         // title
         try{
-            title = eNode.getElementsByTagName("title").item(0).getTextContent().replace(',',';').replace('\n',' ')+ ",";
+            title = parseAttributeForCSV(item.title) + ",";
         }catch (Exception ex){
             title = "Not Found ,";
         }
         // publication date
         try{
-            pubDate = eNode.getElementsByTagName("pubDate").item(0).getTextContent().replace(',', ';').replace('\n',' ') + ",";
+            pubDate = parseAttributeForCSV(item.publicationDate) + ",";
         }catch (Exception ex){
             pubDate = "Not Found ,";
         }
         // category
         try{
-            category = eNode.getElementsByTagName("category").item(0).getTextContent().replace(',', ';').replace('\n',' ') + ",";
+            category = parseAttributeForCSV(item.category) + ",";
         }catch (Exception ex){
             category = "Not Found ,";
         }
         // description
         try {
-             description = eNode.getElementsByTagName("description").item(0).getTextContent().replace(',',';').replace('\n',' ');
+            description = parseAttributeForCSV(item.description);
         }catch (Exception e){
             description = "Not Found";
         }
-
-        String newLine = title + pubDate + category + description + "\n";
-        return  newLine;
+        return  title + pubDate + category + description + "\n";
     }
 
+    public ArrayList<Item> parseXMLToItems(NodeList nodes){
+        ArrayList<Item> items = new ArrayList<Item>();
+        for(int i = 0; i < nodes.getLength(); i++){
+            Item item = new Item();
+            Element element = (Element)nodes.item(i);
+
+            try{
+                item.title = parseElementFromXML(element,"title");
+            }catch (Exception ex){
+                item.title = "N/A";
+            }
+            try{
+                item.publicationDate = parseElementFromXML(element,"pubDate");
+            }catch (Exception ex){
+                item.publicationDate = "N/A";
+            }
+            try{
+                item.category = parseElementFromXML(element,"category");
+            }catch (Exception ex){
+                item.category = "N/A";
+            }
+            try{
+                item.description = parseElementFromXML(element,"description");
+            }catch (Exception ex){
+                item.description = "N/A";
+            }
+
+            items.add(item);
+
+        }
+        return items;
+    }
+
+    public String parseAttributeForCSV(String itemAttribute){
+        return itemAttribute.replace(',',';').replace('\n',' ');
+    }
+    public String parseElementFromXML(Element e, String tag){
+        return e.getElementsByTagName(tag).item(0).getTextContent().trim();
+    }
 
 }

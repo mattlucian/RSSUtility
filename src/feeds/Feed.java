@@ -21,7 +21,8 @@ public class Feed {
         String html = "";
         html += "<tr><td>"+feedName+"</td><td style=\"text-align:right;\"><button class=\"button-style\" onclick=\"clickedDisplay("+id+")\">Display</button>";
         html += "<button class=\"button-style\" onclick=\"clickedExport("+id+")\">Export</button>";
-        html += "<input type=\"hidden\" name=\"url_"+id+"\" id=\"url_"+id+"\" value=\""+feedURL+"\" /></td></tr>";
+        html += "<input type=\"hidden\" name=\"url_"+id+"\" id=\"url_"+id+"\" value=\""+feedURL+"\" />" +
+                "<button class=\"button-style\" onclick=\"clickedDelete("+id+")\"><img class=\"trash-button\" src=\"./css/trash.png\"></img></button> </td></tr>";
         return html;
     }
 

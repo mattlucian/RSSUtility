@@ -10,6 +10,7 @@
         import="java.util.ArrayList"
         contentType="text/html;charset=UTF-8" language="java"
 %>
+<%@ page import="feeds.Item" %>
 
 <html>
   <head>
@@ -18,7 +19,7 @@
     <script type="text/javascript" src="js/site.js"></script>   <!-- JS -->
   </head>
   <body>
-    <p style="color:red;margin-top:3%;">${sessionScope.errorMessage}</p>
+    <p style="color:red;margin-top:3%;" id="errorMessage">${sessionScope.errorMessage}</p>
     <% request.getSession().setAttribute("errorMessage","");%>
     <h1 class="heading">RSSUtility</h1>
     <button onclick="visitPage('http://github.com/mattlucian/RSSUtility')" class="button-style">Source Code</button>
@@ -57,6 +58,7 @@
             <h2 class="rss-heading">RSS Feeds</h2>
             <form id="rssForm" action="/TrackerServlet" method="post">
                 <input type="hidden" id="display" name="display" value="" />
+                <input type="hidden" id="delete" name="delete" value="" />
                 <input type="hidden" id="servlet_plan" name="plan" value="" />
                 <input type="hidden" id="currentSelection" name="currentSelection" value=""/>
                 <table id="feedTable">
@@ -70,6 +72,9 @@
                         }catch(Exception ex){
 
                         } %>
+
+                    <!-- JSTL custom function that returns Feed HTML -->
+
                 </table>
                 <hr class="full-hr" />
                 <div style="text-align:right;width:500px;margin:auto;">
@@ -80,6 +85,19 @@
     </div>
 
 
+
+    <!-- DISPLAY RSS -->
+    <%
+        ArrayList<Item> items = null;
+        if((items = (ArrayList<Item>)session.getAttribute("feedItems")) != null){
+
+            for(Item item : items){
+
+            }
+
+
+        }
+    %>
 
     <!-- RSS DISPLAY TEMPLATE -->
     <jsp:include page="rssDisplayTemplate.jsp" />

@@ -10,23 +10,45 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 
 import feeds.Feed;
+import feeds.Item;
 import feeds.Utility;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
-import java.io.File;
 import java.util.ArrayList;
 
 
-// Extend HttpServlet class
 public class TrackerServlet extends HttpServlet {
 
     private Connection connection = null;
+    private String connectionString = "**********************************";
+    private String password = "*****************";
+    private String username = "*****************";
 
     public void init() throws ServletException
     {
 
+    }
+
+    public ServletStatus delete(HttpServletRequest request, HttpServletResponse response){
+        ServletStatus status = new ServletStatus();
+
+        String one="",two="",three="";
+        try{
+            PreparedStatement validateStmt = connection.prepareStatement("DELETE FROM rssfeed WHERE id = ?");
+            validateStmt.setInt(1, Integer.parseInt(request.getParameter("delete")));
+            two=" two ";
+            validateStmt.execute();
+            three = " three ";
+
+            status.succeeded = true;
+            status.message = "Removed Feed from DB";
+            return status;
+
+        }catch (Exception ex){
+            status.succeeded = false;
+            status.message = "Unable to remove entry from DB, please try again "+one+two+three;
+            return  status;
+        }
     }
 
     // Handles POST requests, only thing currently supported
@@ -36,10 +58,23 @@ public class TrackerServlet extends HttpServlet {
     {
 
         try{ // Do required initialization
+
+
+            /*
+               NOTE: Re-establishing a connection every servlet call. For some reason, my host times out the connection
+                     very quickly, so this was the simplest solution for the purposes of this application.
+             */
+            if(connection != null){
+                if(connection.isClosed()){
+                    connection = null;
+                }else{
+                    connection.close();
+                    connection = null;
+                }
+            }
             // **************
-            String connectionURL = "**************";
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            this.connection = DriverManager.getConnection(connectionURL, "**************", "**************");
+            this.connection = DriverManager.getConnection(connectionString, username, password);
 
         }catch(Exception ex){
             // unable to hit the database
@@ -48,17 +83,20 @@ public class TrackerServlet extends HttpServlet {
 
         ServletStatus status = new ServletStatus();
 
-        /*if(failed){ // check DB error
-            failed = false;
-            response.sendRedirect("error.jsp");
-            destroy();
-        }
-*/
         String action = null;
         try {
             if((action = request.getParameter("plan")) != null){
 
-                if(action.equals("export")){
+                if(action.equals("delete")){ // delete
+
+
+                    status = delete(request,response);
+                    if(!status.succeeded){
+                        request.getSession().setAttribute("errorMessage", status.message);
+                    }
+                    response.sendRedirect("index.jsp");
+
+                }else if(action.equals("export")){ //export
                     status = export(request,response);
                     if(!status.succeeded){
                         // error exporting single, please try again.
@@ -67,12 +105,19 @@ public class TrackerServlet extends HttpServlet {
                     }
 
 
-                }else if(action.equals("display")){
+                }else if(action.equals("display")){ //display
 
-                    response.sendRedirect("index.jsp?display="+request.getParameter("display"));
+                    /*Utility utility = new Utility();
+                    String id = request.getParameter("display");
 
-                }else if(action.equals("exportAll")){
-                    status = exportAll(request,response);
+                    ArrayList<Item> items = utility.getFeedItems(Integer.parseInt(id));
+                    request.getSession().setAttribute("feedItems",items);*/
+
+                    // Decided to keep JSTL functionality for demonstration, this allows template to display it
+                    response.sendRedirect("index.jsp?display=" + request.getParameter("display"));
+
+                }else if(action.equals("exportAll")){ //export all
+                    status = exportAll(response);
                     if(!status.succeeded){
                         // error exporting all, please try again
                     }
@@ -82,7 +127,9 @@ public class TrackerServlet extends HttpServlet {
 
             if(request.getParameter("add") != null){
 
-                status = add(request,response);
+
+                response.setContentType("text/html");
+                status = add(request);
 
                 if(status.succeeded) {
                     response.sendRedirect("index.jsp");
@@ -104,9 +151,8 @@ public class TrackerServlet extends HttpServlet {
     }
 
     // Add new Feed
-    public ServletStatus add(HttpServletRequest request, HttpServletResponse response) throws IOException{
+    public ServletStatus add(HttpServletRequest request) throws IOException{
         // Set response content type
-        response.setContentType("text/html");
         ServletStatus status = new ServletStatus();
 
         // Get parameters
@@ -125,6 +171,24 @@ public class TrackerServlet extends HttpServlet {
             status.message = "Please enter correct name and URL";
             return status;
         }
+
+
+        // validate RSS validity
+        try{
+            Utility utility = new Utility();
+            ArrayList<Item> items = utility.getFeedItems(feedURL);
+            if(items == null){
+                status.message = "Not a supported RSS url, please try again.";
+                status.succeeded = false;
+                return status;
+            }
+
+        }catch (Exception ex){
+            status.message = "Not a supported RSS url, please try again.";
+            status.succeeded = false;
+            return status;
+        }
+
 
         // Success
         try{
@@ -205,8 +269,11 @@ public class TrackerServlet extends HttpServlet {
                 // CSV Header
                 CSVExport += "Title,Published Date,Category,Description\n";
 
+                // Convert XML to Items
+                ArrayList<Item> items = utility.parseXMLToItems(nList);
+
                 // Serialize NodeList to CSV
-                CSVExport = utility.serializeFeed(CSVExport,nList);
+                CSVExport = utility.serializeFeed(CSVExport,items);
 
                 // Set up for File download as CSV
                 response.setContentType("application/csv");
@@ -228,10 +295,6 @@ public class TrackerServlet extends HttpServlet {
             }
 
 
-
-
-
-
         }catch (Exception ex){
             status.succeeded = false;
             status.message = "Failed to get Name and/or URL parameters, please try again.";
@@ -241,7 +304,7 @@ public class TrackerServlet extends HttpServlet {
     }
 
     // export all feeds
-    public ServletStatus exportAll(HttpServletRequest request, HttpServletResponse response) throws IOException
+    public ServletStatus exportAll(HttpServletResponse response) throws IOException
     {
         ServletStatus status = new ServletStatus();
 
@@ -262,12 +325,14 @@ public class TrackerServlet extends HttpServlet {
                 // Get list of all the items from Feed
                 NodeList nList = doc.getElementsByTagName("item");
 
+                //convert list to items
+                ArrayList<Item> items = utility.parseXMLToItems(nList);
+
                 // Serialize NodeList to CSV
-                CSVExport = utility.serializeFeed(CSVExport, nList, feed.feedName);
+                CSVExport = utility.serializeFeed(CSVExport, items, feed.feedName);
 
             } catch (Exception e) {
-                status.message = "inner fail "+e.getMessage();
-                status.succeeded = false;
+                // skip this feed
             }
 
         }

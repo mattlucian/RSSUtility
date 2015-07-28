@@ -10,7 +10,11 @@ Core
 
   - Utility class
     - GetFeeds method  : returns all current feeds in DB
+    - SerializeItem ; Serializes single item for CSV
     - SerializeFeed : Serializes single feed for CSV
+    - SerializeFeeds : Seralizes all feeds
+    - ParseXMLToItems : Parses RSS xml into usable item objects
+    - Various other parsing methods
 
   - ServletStatus class
     - Provides for more detailed responses with error messages
@@ -20,6 +24,7 @@ Core
 
   - index.jsp
     - Displays feeds and the ability to add feeds.
+
   - error.jsp
     - Landing page when an unexpected error occurs
 

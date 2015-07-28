@@ -24,3 +24,15 @@ function visitPage(url){
     var win = window.open(url, '_blank');
     win.focus();
 }
+
+function setErrorMessage(message){
+    document.getElementById("errorMessage").innerText = message;
+}
+
+function clickedDelete(id){
+    var result = confirm("Are you sure you'd like to delete this?");
+    if(result == true){
+        document.getElementById("servlet_plan").value = "delete";
+        document.getElementById("delete").value = id;
+    }
+}
