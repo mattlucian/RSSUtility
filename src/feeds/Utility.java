@@ -5,6 +5,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
@@ -20,12 +22,26 @@ import java.util.ArrayList;
  */
 public class Utility {
     // *****************
-    private String connectionURL = "**********************************";
-    private String connectionUserName = "*****************";
-    private String connectionPassword = "*****************";
+    private String connectionURL = "";
+    private String connectionUserName = "";
+    private String connectionPassword = "";
     /// ***************
 
+    public Utility(String con, String user, String pass){
+        connectionURL = con;
+        connectionUserName = user;
+        connectionPassword = pass;
+    }
     public Utility(){
+        try{
+            Context env = (Context)new InitialContext().lookup("java:comp/env");
+            connectionURL = (String)env.lookup("connectionString");
+            connectionUserName = (String)env.lookup("username");
+            connectionPassword = (String)env.lookup("password");
+
+        }catch (Exception ex){
+            // error
+        }
 
     }
 

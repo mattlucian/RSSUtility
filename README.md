@@ -1,6 +1,18 @@
 # RSSUtility
 Simple Java Servlet application that tracks RSS feeds and contains exporting capability (CSV)
 
+Setup
+-----
+  - Have JVM Tomcat Environment with MySQL DB
+    - View "Technology" for all the things needed
+  - Open the 'web.xml' and replace:
+    - **host** with DB host
+    - **dbname** with DB name
+    - **username** with DB username
+    - **password** with DB password
+    - Restore "backup.sql" to restore the DB structure
+  - Deploy exploded web artifact to root directory of JVM site
+
 Core
 -----
   - TrackerServlet class

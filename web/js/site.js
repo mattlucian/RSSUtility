@@ -34,5 +34,7 @@ function clickedDelete(id){
     if(result == true){
         document.getElementById("servlet_plan").value = "delete";
         document.getElementById("delete").value = id;
+    }else{
+        document.getElementById("servlet_plan").value = "cancel";
     }
 }

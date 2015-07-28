@@ -3,12 +3,27 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
-        <servlet>
-            <servlet-name>TrackerServlet</servlet-name>
-            <servlet-class>TrackerServlet</servlet-class>
-        </servlet>
-        <servlet-mapping>
-            <servlet-name>TrackerServlet</servlet-name>
-            <url-pattern>/TrackerServlet</url-pattern>
-        </servlet-mapping>
+    <servlet>
+        <servlet-name>TrackerServlet</servlet-name>
+        <servlet-class>TrackerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TrackerServlet</servlet-name>
+        <url-pattern>/TrackerServlet</url-pattern>
+    </servlet-mapping>
+    <env-entry>
+        <env-entry-name>connectionString</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>jdbc:mysql://**host**/**dbname**</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <env-entry-name>username</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>**username**</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <env-entry-name>password</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>**password**</env-entry-value>
+    </env-entry>
 </web-app>

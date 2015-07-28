@@ -4,6 +4,8 @@ import java.io.*;
 
 import java.net.URL;
 import java.sql.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,13 +22,21 @@ import java.util.ArrayList;
 public class TrackerServlet extends HttpServlet {
 
     private Connection connection = null;
-    private String connectionString = "**********************************";
-    private String password = "*****************";
-    private String username = "*****************";
+    private String connectionString = "";
+    private String password = "";
+    private String username = "";
 
     public void init() throws ServletException
     {
+        try{
+            Context env = (Context)new InitialContext().lookup("java:comp/env");
+            connectionString = (String)env.lookup("connectionString");
+            username = (String)env.lookup("username");
+            password = (String)env.lookup("password");
 
+        }catch (Exception ex){
+            destroy();
+        }
     }
 
     public ServletStatus delete(HttpServletRequest request, HttpServletResponse response){
@@ -121,25 +131,29 @@ public class TrackerServlet extends HttpServlet {
                     if(!status.succeeded){
                         // error exporting all, please try again
                     }
-                }
-
-            }
-
-            if(request.getParameter("add") != null){
-
-
-                response.setContentType("text/html");
-                status = add(request);
-
-                if(status.succeeded) {
-                    response.sendRedirect("index.jsp");
-                }else{
-                    // send to index but pass error message
-                    request.getSession().setAttribute("errorMessage", status.message);
+                }else if(action.equals("cancel")){
                     response.sendRedirect("index.jsp");
                 }
 
+            }else{
+                if(request.getParameter("add") != null){
+
+
+                    response.setContentType("text/html");
+                    status = add(request);
+
+                    if(status.succeeded) {
+                        response.sendRedirect("index.jsp");
+                    }else{
+                        // send to index but pass error message
+                        request.getSession().setAttribute("errorMessage", status.message);
+                        response.sendRedirect("index.jsp");
+                    }
+
+                }
             }
+
+
 
         }catch (Exception ex){
 
@@ -175,7 +189,7 @@ public class TrackerServlet extends HttpServlet {
 
         // validate RSS validity
         try{
-            Utility utility = new Utility();
+            Utility utility = new Utility(connectionString,username,password);
             ArrayList<Item> items = utility.getFeedItems(feedURL);
             if(items == null){
                 status.message = "Not a supported RSS url, please try again.";
@@ -250,7 +264,7 @@ public class TrackerServlet extends HttpServlet {
                 return status;
             }
 
-            Utility utility = new Utility();
+            Utility utility = new Utility(connectionString,username,password);
             String CSVExport = "";
             // Parse XML components
             try {
@@ -308,7 +322,7 @@ public class TrackerServlet extends HttpServlet {
     {
         ServletStatus status = new ServletStatus();
 
-        Utility utility = new Utility();
+        Utility utility = new Utility(connectionString,username,password);
         ArrayList<Feed> feeds = utility.getFeeds();
 
 
