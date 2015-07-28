@@ -5,7 +5,7 @@ Setup
 -----
   - Have JVM Tomcat Environment with MySQL DB
     - View "Technology" for all the things needed
-  - Open the 'web.xml' and replace:
+  - Open the 'web.xml' and replace (surrounded with '**'):
     - **host** with DB host
     - **dbname** with DB name
     - **username** with DB username
